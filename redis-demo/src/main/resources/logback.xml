@@ -1,0 +1,36 @@
+<configuration debug="false" scan="true" scanPeriod="5 seconds">
+	<!-- 일반적인 FILE LOG PATTERN -->
+	<property name="FILE_LOG_PATTERN" value="[%d{yyyy-MM-dd HH:mm:ss.SSS}][%5p][%t][%c][%X{req.remoteHost}][%X{GUID}] %m%n" />
+	
+	<!-- CONSOLE LOG PATTERN -->
+	<property name="CONSOLE_LOG_PATTERN" value="%d{[yyyy.MM.dd HH:mm:ss]} [%-35.35c{1}] %-5p %m%n" />
+	
+		<!-- Console Appender -->
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+		</encoder>
+	</appender>	
+	 
+	<!-- Spring --> 	
+ 	<logger name="org.springframework"  level="WARN"  additivity="false" >
+		<appender-ref ref="console" />
+	</logger>
+ 	<logger name="org.springframework.cloud"  level="DEBUG"  additivity="false" >
+		<appender-ref ref="console" />
+	</logger>	
+	<logger name="org.springframework.core" level="INFO" additivity="false" >
+		<appender-ref ref="console" />
+	</logger>
+	<logger name="org.springframework.beans" level="INFO"  additivity="false" >
+		<appender-ref ref="console" />
+	</logger>
+	<logger name="org.springframework.context" level="INFO" additivity="false" >
+		<appender-ref ref="console" />
+	</logger>
+	 	
+	<!-- Root INFO declaration -->
+	<root level="DEBUG" additivity="false">
+		<appender-ref ref="console" />
+    </root>
+</configuration>

@@ -1,0 +1,18 @@
+server:
+  port: 18080
+#logging:
+#  level: 
+#    root: debug
+      
+spring:
+  redis:
+    host: pub-redis-16669.dal-05.1.sl.garantiadata.com
+    password: uncTg3cw9kbvCIk0
+    port: 16669
+#  data:
+#    redis:
+#      repositories:
+#        enabled: true
+
+
+    
