@@ -1,7 +1,5 @@
 package com.skcc.redis;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,9 +20,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @SpringBootApplication
 @RestController
@@ -32,10 +35,7 @@ public class TemplateApplication {
 
 	@Autowired
 	private RedisTemplate<String, Object> template;
-	
-//	@Autowired
-//	private ObjectStorageService objectStorage;
-	
+		
 	@Autowired
 	private Token token;
 	
@@ -99,34 +99,22 @@ public class TemplateApplication {
 		return ResponseEntity.ok(HttpServletResponse.SC_OK);
 	}
 	
-	@GetMapping("/fileupload/{fileName}")
-	private ResponseEntity<?> putFile(@PathVariable String fileName) throws Exception {
+	@PostMapping(value="/fileupload")
+	private @ResponseBody String putFile(@RequestParam MultipartFile file, Model model) throws Exception {
 		System.out.println("Storing file in ObjectStorage...");
 		
 		OSClientV3 clientFromToken = OSFactory.clientFromToken(token);
 		ObjectStorageService objectStorage = clientFromToken.objectStorage();
 		
-		if(containerName == null || fileName == null){ //No file was specified to be found, or container name is missing
-			System.out.println("File not found.");
-			return ResponseEntity.badRequest().body(HttpServletResponse.SC_NOT_FOUND);
-		}
-		
-		File uploadFile = new File("/Users/ahnhojung/Downloads/" + fileName);
+		objectStorage.containers().create(containerName);
 
-		if(uploadFile.exists() == false){
-			System.out.println("upload File not found.[" + uploadFile + "]");
-			return ResponseEntity.badRequest().body(HttpServletResponse.SC_NOT_FOUND);
-		}
-		
-		final InputStream fileStream = new FileInputStream(uploadFile);
+		Payload<InputStream> payload = new PayloadClass(file.getInputStream());
 
-		Payload<InputStream> payload = new PayloadClass(fileStream);
-
-		objectStorage.objects().put(containerName, fileName, payload);
+		objectStorage.objects().put(containerName, file.getOriginalFilename(), payload);
 		
 		System.out.println("Successfully stored file in ObjectStorage!");
 		
-		return ResponseEntity.ok(HttpServletResponse.SC_OK);
+		return "upload success!";
 	}
 }
 
