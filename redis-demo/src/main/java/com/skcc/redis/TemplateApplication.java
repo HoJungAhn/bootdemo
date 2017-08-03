@@ -10,11 +10,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.openstack4j.api.OSClient.OSClientV3;
-import org.openstack4j.api.client.IOSClientBuilder.V3;
 import org.openstack4j.api.storage.ObjectStorageService;
 import org.openstack4j.model.common.DLPayload;
-import org.openstack4j.model.common.Identifier;
 import org.openstack4j.model.common.Payload;
+import org.openstack4j.model.identity.v3.Token;
 import org.openstack4j.model.storage.object.SwiftObject;
 import org.openstack4j.openstack.OSFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +33,14 @@ public class TemplateApplication {
 	@Autowired
 	private RedisTemplate<String, Object> template;
 	
+//	@Autowired
+//	private ObjectStorageService objectStorage;
+	
+	@Autowired
+	private Token token;
+	
+	private final String containerName = "DEV";
+	
 	public static void main(String[] args) {
 		SpringApplication.run(TemplateApplication.class, args);
 	}
@@ -51,43 +58,14 @@ public class TemplateApplication {
 		opsForValue.set(key, value);
 		return (String)opsForValue.get(key);
 	}
-
-	
-	private static final String OBJECT_STORAGE_AUTH_URL = "https://identity.open.softlayer.com";
-	private static final String PASSWORD = "YU,l99Eg,mNMu5!)";
-	private static final String USERID = "e12340034fd244349378577b345f32a6";
-	private static final String DOMAINNAME = "1404765";
-	private static final String PROJECT = "object_storage_dc896def_6460_4c8b_8e2d_55a19e18ff4d";
-	private static final String containerName = "DEV";
-	
-	private ObjectStorageService authenticateAndGetObjectStorageService() throws Exception {
-		
-
-		System.out.println("Authenticating...");
-
-		Identifier domainIdent = Identifier.byName(DOMAINNAME);
-		Identifier projectIdent = Identifier.byName(PROJECT);
-		 
-		V3 os = OSFactory.builderV3()
-				 .endpoint(OBJECT_STORAGE_AUTH_URL + "/v3")
-				 .credentials(USERID, PASSWORD)
-				 .scopeToProject(projectIdent, domainIdent);
-		
-		OSClientV3 authenticate = os.authenticate();
-
-		System.out.println("Authenticated successfully!");
-
-		ObjectStorageService objectStorage = authenticate.objectStorage();
-
-		return objectStorage;
-	}
 	
 	@GetMapping("/filedownload/{fileName}")
 	public ResponseEntity<?> getfile(@PathVariable String fileName, HttpServletResponse response) throws Exception {
-		ObjectStorageService objectStorage = authenticateAndGetObjectStorageService();
 
 		System.out.println("Retrieving file from ObjectStorage...");
-
+		
+		OSClientV3 clientFromToken = OSFactory.clientFromToken(token);
+		ObjectStorageService objectStorage = clientFromToken.objectStorage();
 
 		if(containerName == null || fileName == null){ //No file was specified to be found, or container name is missing
 			System.out.println("Container name or file name was not specified.");
@@ -123,9 +101,10 @@ public class TemplateApplication {
 	
 	@GetMapping("/fileupload/{fileName}")
 	private ResponseEntity<?> putFile(@PathVariable String fileName) throws Exception {
-		ObjectStorageService objectStorage = authenticateAndGetObjectStorageService();
-
 		System.out.println("Storing file in ObjectStorage...");
+		
+		OSClientV3 clientFromToken = OSFactory.clientFromToken(token);
+		ObjectStorageService objectStorage = clientFromToken.objectStorage();
 		
 		if(containerName == null || fileName == null){ //No file was specified to be found, or container name is missing
 			System.out.println("File not found.");
