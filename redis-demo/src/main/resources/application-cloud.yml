@@ -5,3 +5,9 @@ demo:
     project: "object_storage_dc896def_6460_4c8b_8e2d_55a19e18ff4d"
     user-id: "e12340034fd244349378577b345f32a6"
     password: "YU,l99Eg,mNMu5!)"  
+
+spring:
+  http:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: -1    
