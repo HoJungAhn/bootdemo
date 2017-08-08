@@ -1,20 +1,17 @@
 package com.skcc.redis.config;
 
-import org.openstack4j.api.OSClient.OSClientV3;
-import org.openstack4j.api.client.IOSClientBuilder.V3;
-import org.openstack4j.api.storage.ObjectStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
 
 @Configuration
+@EnableRedisHttpSession(maxInactiveIntervalInSeconds=60) // set timeout 1min
 public class RedisConfig {
 	@Autowired
 	private JedisConnectionFactory connectionFactory;
-//	@Autowired
-//	private V3 objectStorage;
 	
 	@Bean
 	public RedisTemplate<String, Object> redisTemplate(){
@@ -22,12 +19,9 @@ public class RedisConfig {
 		redisTemplate.setConnectionFactory(connectionFactory);
 		return redisTemplate;
 	}
-
-//	@Bean
-//	public ObjectStorageService objectStorage(){
-//		OSClientV3 authenticate = objectStorage.authenticate();
-//		System.out.println("Authenticated successfully!");
-//		return authenticate.objectStorage();
-//	}
-
+	
+//	 @Bean
+//     public LettuceConnectionFactory connectionFactory() {
+//             return new LettuceConnectionFactory(); 
+//     }
 }

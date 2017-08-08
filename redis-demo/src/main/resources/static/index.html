@@ -1,8 +1,45 @@
 <html>
-<form action="/fileupload" method="post" enctype="multipart/form-data">
+<script type="text/javascript" src="https://code.jquery.com/jquery-latest.min.js"></script>
+<script>
+
+$(function(){
+    //something TODO
+   $.ajax({
+        type:"GET",
+         url:"filelist ",
+         datatype:"json",
+         success:function(list,txtStatus){
+            console.log(list);           
+            var trHTML = "<tbody>";
+            for(var i=0; i<list.length; i++){
+            	trHTML += "<tr><td>" + list[i].directory + "</td><td><a href='/filedownload?fileName=" + list[i].filename + "'</a>" + list[i].filename + "</td><td>" + list[i].filesize + "</td></tr>";	
+            }
+            trHTML += "</tbody>"
+            $('#files').append(trHTML);
+         },
+         error: function(xhr, txtStatus, errorThrown){
+            alert("error" + errorThrown);
+         }
+     });
+  })
+  
+</script>
+<form action="/fileupload" method="post" enctype="multipart/form-data" >
+	<li><a href="/session">session test</a></li>
 	<li>file upload</li>
 	<input type="file" name="file" />
-	<input type="submit" value="ok">	
+	<input type="submit" value="ok">
+	
+	<table id="files" border="1">
+		<colgroup>
+			<col style="width: 100px;"/>
+			<col style="width: 270px;"/>
+			<col style="width: 80px;"/>
+		</colgroup>
+		<thead>
+			<tr><th>directory</th><th>filename</th><th>filesize</th><tr>
+		</thead>
+	</table>
 </form>
 
 </html>

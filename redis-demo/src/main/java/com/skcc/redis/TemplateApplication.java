@@ -3,11 +3,18 @@ package com.skcc.redis;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.openstack4j.api.OSClient.OSClientV3;
+import org.openstack4j.api.storage.ObjectStorageObjectService;
 import org.openstack4j.api.storage.ObjectStorageService;
 import org.openstack4j.model.common.DLPayload;
 import org.openstack4j.model.common.Payload;
@@ -20,17 +27,18 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @SpringBootApplication
-@RestController
+//@RestController
+@Controller
 public class TemplateApplication {
 
 	@Autowired
@@ -43,6 +51,13 @@ public class TemplateApplication {
 	
 	public static void main(String[] args) {
 		SpringApplication.run(TemplateApplication.class, args);
+	}
+	
+	@RequestMapping("/session")
+	public String index(@RequestParam(required=false) String attributeName, @RequestParam(required=false) String attributeValue, HttpServletRequest req) {
+		if(attributeName != null)
+			req.getSession().setAttribute(attributeName, attributeValue);
+		return "session";
 	}
 	
 	@GetMapping("/get/{key}")
@@ -59,8 +74,32 @@ public class TemplateApplication {
 		return (String)opsForValue.get(key);
 	}
 	
-	@GetMapping("/filedownload/{fileName}")
-	public ResponseEntity<?> getfile(@PathVariable String fileName, HttpServletResponse response) throws Exception {
+	@GetMapping("/filelist")
+	public @ResponseBody List<Map<String,Object>> getFileList() throws Exception{
+		OSClientV3 clientFromToken = OSFactory.clientFromToken(token);
+		
+		ObjectStorageService objectStorage = clientFromToken.objectStorage();
+		ObjectStorageObjectService objects = objectStorage.objects();
+		
+		List <Map<String, Object>> fileList = new ArrayList<Map<String, Object>>();
+		
+		List<? extends SwiftObject> list = objects.list(containerName);
+		
+		for(SwiftObject obj : list){
+			Map <String, Object> map = new HashMap<String, Object>();
+	
+			map.put("directory", StringUtils.defaultIfEmpty(obj.getDirectoryName(), "/"));
+			map.put("filename", obj.getName());
+			map.put("filesize", obj.getSizeInBytes());
+			
+			fileList.add(map);
+		}
+		
+		return fileList;
+	}
+	
+	@GetMapping("/filedownload")
+	public ResponseEntity<?> getfile(@RequestParam String fileName, HttpServletResponse response) throws Exception {
 
 		System.out.println("Retrieving file from ObjectStorage...");
 		
@@ -85,8 +124,9 @@ public class TemplateApplication {
 		DLPayload payload = pictureObj.download();
 
 		InputStream in = payload.getInputStream();
-
+		
 		response.setContentType(mimeType);
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + pictureObj.getName() + "\"");
 
 		OutputStream out = response.getOutputStream();
 
@@ -98,9 +138,10 @@ public class TemplateApplication {
 		
 		return ResponseEntity.ok(HttpServletResponse.SC_OK);
 	}
+
 	
 	@PostMapping(value="/fileupload")
-	private @ResponseBody String putFile(@RequestParam MultipartFile file, Model model) throws Exception {
+	public String putFile(@RequestParam MultipartFile file) throws Exception {
 		System.out.println("Storing file in ObjectStorage...");
 		
 		OSClientV3 clientFromToken = OSFactory.clientFromToken(token);
@@ -114,7 +155,8 @@ public class TemplateApplication {
 		
 		System.out.println("Successfully stored file in ObjectStorage!");
 		
-		return "upload success!";
+//		return "";
+		return "redirect:/index.html";
 	}
 }
 

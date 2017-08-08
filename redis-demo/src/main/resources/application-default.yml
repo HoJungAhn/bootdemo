@@ -1,18 +1,23 @@
 server:
   port: 18080
+  
 #logging:
 #  level: 
 #    root: debug
       
 spring:
-  redis:
+  redis: 
     host: pub-redis-16669.dal-05.1.sl.garantiadata.com
     password: uncTg3cw9kbvCIk0
     port: 16669
-  http:
-    multipart:
+  http: 
+    multipart: 
       max-file-size: 100MB
       max-request-size: -1
+  mvc:
+    view:
+      prefix: /WEB-INF/jsp/
+      suffix: .jsp
 
 demo:
   objectstrage:
@@ -22,5 +27,5 @@ demo:
     user-id: "e12340034fd244349378577b345f32a6"
     password: "YU,l99Eg,mNMu5!)"  
 
-  
+
     
