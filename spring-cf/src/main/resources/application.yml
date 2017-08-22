@@ -1,0 +1,9 @@
+cf: 
+  apiHost: api.ng.bluemix.net
+  organization: woogaris1
+  space: dev
+  username: woogaris1@gmail.com
+  password: Dnrkfltm0!
+  
+server:
+  port: 8080
