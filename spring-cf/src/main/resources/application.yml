@@ -1,8 +1,8 @@
 cf: 
   apiHost: api.ng.bluemix.net
-  organization: woogaris1
+  organization: wogaris1
   space: dev
-  username: woogaris1@gmail.com
+  username: wogaris1@gmail.com
   password: Dnrkfltm0!
   
 server:
