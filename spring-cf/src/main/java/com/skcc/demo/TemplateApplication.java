@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.cloudfoundry.operations.DefaultCloudFoundryOperations;
 import org.cloudfoundry.operations.applications.ApplicationSummary;
 import org.cloudfoundry.operations.organizations.OrganizationSummary;
+import org.cloudfoundry.operations.services.ServiceInstanceSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -46,6 +47,20 @@ public class TemplateApplication {
 	     cloudFoundryOperations.applications()
 	     .list()
 	     .map(ApplicationSummary::getName)
+	     .collect(Collectors.joining(", "))
+	     .map(n -> ResponseEntity.ok(n))
+	     .subscribe(re -> result.setResult(re));
+	     
+	     return result;
+	}
+	
+	@GetMapping("/services")
+	public DeferredResult <ResponseEntity<String>> getServiceInstance() {
+		DeferredResult <ResponseEntity<String>> result = new DeferredResult<ResponseEntity<String>>(); 
+	     
+	     cloudFoundryOperations.services()
+	     .listInstances()
+	     .map(ServiceInstanceSummary::getName)
 	     .collect(Collectors.joining(", "))
 	     .map(n -> ResponseEntity.ok(n))
 	     .subscribe(re -> result.setResult(re));
